@@ -12,7 +12,7 @@ class K8sClient:
         self.api = client.AppsV1Api()
 
     def _get_argocd_managed_status(self, labels: dict) -> bool:
-        return (labels or {}).get('argocd.argoproj.io/managed-by') is not None
+        return (labels or {}).get('argocd.argoproj.io/instance') is not None
 
     def get_all_resources(self, resource_type: str) -> List[ResourceInfo]:
         resources = []
