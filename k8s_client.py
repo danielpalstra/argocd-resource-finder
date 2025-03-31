@@ -11,8 +11,9 @@ class K8sClient:
             config.load_incluster_config()
         self.api = client.AppsV1Api()
 
-    def _get_argocd_managed_status(self, labels: dict) -> bool:
-        return (labels or {}).get('argocd.argoproj.io/instance') is not None
+    def _get_argocd_managed_status(self, labels: dict) -> tuple[bool, str]:
+        label_value = (labels or {}).get('argocd.argoproj.io/instance', '')
+        return bool(label_value), label_value or 'N/A'
 
     def get_all_resources(self, resource_type: str) -> List[ResourceInfo]:
         resources = []
@@ -27,12 +28,13 @@ class K8sClient:
                 raise ValueError(f"Unsupported resource type: {resource_type}")
 
             for item in items:
-                is_argocd_managed = self._get_argocd_managed_status(item.metadata.labels)
+                is_managed, label_value = self._get_argocd_managed_status(item.metadata.labels)
                 resources.append(ResourceInfo(
                     name=item.metadata.name,
                     namespace=item.metadata.namespace,
-                    is_argocd_managed=is_argocd_managed,
-                    resource_type=resource_type
+                    is_argocd_managed=is_managed,
+                    resource_type=resource_type,
+                    label_value=label_value
                 ))
         except Exception as e:
             click.echo(f"Error fetching {resource_type}s: {e}", err=True)

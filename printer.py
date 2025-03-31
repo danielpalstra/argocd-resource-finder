@@ -8,6 +8,7 @@ class ResourceInfo:
     namespace: str
     is_argocd_managed: bool
     resource_type: str
+    label_value: str
 
 class ResourcePrinter:
     @staticmethod
@@ -19,7 +20,7 @@ class ResourcePrinter:
             click.echo(f"No {status} resources found.")
             return
 
-        click.echo(f"{'TYPE':<15} {'NAMESPACE':<20} {'NAME':<40}")
-        click.echo("-" * 75)
+        click.echo(f"{'TYPE':<15} {'NAMESPACE':<20} {'NAME':<40} {'LABEL VALUE':<20}")
+        click.echo("-" * 95)
         for resource in filtered_resources:
-            click.echo(f"{resource.resource_type:<15} {resource.namespace:<20} {resource.name:<40}")
+            click.echo(f"{resource.resource_type:<15} {resource.namespace:<20} {resource.name:<40} {resource.label_value:<20}")
