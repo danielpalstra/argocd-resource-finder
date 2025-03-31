@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kubernetes Resources</title>
+    <style>
+        /* CSS styles will be added here in the future */
+    </style>
+</head>
+<body>
+    <h1>Kubernetes Resources</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Namespace</th>
+                <th>Name</th>
+                <th>Label Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resource in resources %}
+            <tr>
+                <td>{{ resource.resource_type }}</td>
+                <td>{{ resource.namespace }}</td>
+                <td>{{ resource.name }}</td>
+                <td>{{ resource.label_value }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if not resources %}
+    <p>No {{ "managed" if managed else "unmanaged" }} resources found.</p>
+    {% endif %}
+</body>
+</html>
