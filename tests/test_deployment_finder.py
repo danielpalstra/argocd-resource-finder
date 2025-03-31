@@ -93,3 +93,57 @@ def test_list_deployments_mixed_resources(cli_runner, mock_k8s_client):
     assert "dep4" in result.output
     assert "dep1" not in result.output
     assert "dep3" not in result.output
+
+def test_list_all_resources(cli_runner, mock_k8s_client):
+    # Setup mock with mixed resource types
+    mock_instance = mock_k8s_client.return_value
+    mock_instance.get_all_resources.side_effect = [
+        # Deployments
+        [
+            ResourceInfo("dep1", "ns1", True, "deployment", "app1"),
+            ResourceInfo("dep2", "ns2", False, "deployment", "N/A"),
+        ],
+        # StatefulSets
+        [
+            ResourceInfo("sts1", "ns1", True, "statefulset", "app2"),
+        ],
+        # DaemonSets
+        [
+            ResourceInfo("ds1", "ns3", False, "daemonset", "N/A"),
+        ]
+    ]
+
+    # Test managed resources
+    result = cli_runner.invoke(cli, ['list-all', '--managed'])
+    assert result.exit_code == 0
+    assert "dep1" in result.output
+    assert "sts1" in result.output
+    assert "ds1" not in result.output
+    assert "dep2" not in result.output
+
+    # Test unmanaged resources
+    result = cli_runner.invoke(cli, ['list-all', '--unmanaged'])
+    assert result.exit_code == 0
+    assert "dep2" in result.output
+    assert "ds1" in result.output
+    assert "dep1" not in result.output
+    assert "sts1" not in result.output
+
+def test_list_all_with_api_error(cli_runner, mock_k8s_client):
+    # Setup mock to raise an exception for one resource type
+    mock_instance = mock_k8s_client.return_value
+    mock_instance.get_all_resources.side_effect = [
+        # Deployments succeed
+        [ResourceInfo("dep1", "ns1", True, "deployment", "app1")],
+        # StatefulSets fail
+        Exception("API Error for StatefulSets"),
+        # DaemonSets succeed
+        [ResourceInfo("ds1", "ns3", True, "daemonset", "app3")]
+    ]
+
+    # Test that we continue even if one resource type fails
+    result = cli_runner.invoke(cli, ['list-all', '--managed'])
+    assert result.exit_code == 0
+    assert "dep1" in result.output
+    assert "ds1" in result.output
+    assert "API Error for StatefulSets" in result.output

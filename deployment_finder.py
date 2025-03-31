@@ -65,5 +65,34 @@ def list_daemonsets(managed: bool, output: str, output_file: str):
         raise click.UsageError('--output-file is required when using HTML output')
     get_resources('daemonset', managed, output, output_file)
 
+@cli.command()
+@click.option('--managed/--unmanaged', default=False,
+              help='Show ArgoCD managed/unmanaged resources')
+@click.option('--output', '-o', type=click.Choice(['text', 'html']), default='text',
+              help='Output format (text or html)')
+@click.option('--output-file', '-f', type=str,
+              help='Output file for HTML format')
+def list_all(managed: bool, output: str, output_file: str):
+    """List all resources (deployments, statefulsets, and daemonsets) based on their ArgoCD management status."""
+    if output == 'html' and not output_file:
+        raise click.UsageError('--output-file is required when using HTML output')
+    
+    k8s_client = K8sClient()
+    all_resources = []
+    
+    for resource_type in ['deployment', 'statefulset', 'daemonset']:
+        try:
+            resources = k8s_client.get_all_resources(resource_type)
+            all_resources.extend(resources)
+        except Exception as e:
+            click.echo(f"Error fetching {resource_type}s: {e}", err=True)
+    
+    if output == 'html' and output_file:
+        printer = HTMLPrinter()
+        printer.print_resources(all_resources, managed, output_file)
+    else:
+        printer = ResourcePrinter()
+        printer.print_resources(all_resources, managed)
+
 if __name__ == '__main__':
     cli()
