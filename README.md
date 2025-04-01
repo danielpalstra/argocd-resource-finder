@@ -8,6 +8,12 @@ A tool to find Kubernetes deployments based on their ArgoCD management status.
 pip install -r requirements.txt
 ```
 
+For development and testing, also install the development dependencies:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
 ## Usage
 
 To find deployments not managed by ArgoCD:
@@ -67,8 +73,8 @@ python -m pytest --cov=./ --cov-report=term
 
 This repository includes GitHub Actions workflows for:
 
-1. **Automated Testing**: Runs the test suite on multiple Python versions (3.8, 3.9, 3.10) on every push to main and pull request.
+1. **Automated Testing**: Runs the test suite on multiple Python versions (3.12, 3.13) on pull requests to main.
 
-2. **Code Coverage**: Generates a code coverage report and uploads it to Codecov on every push to main and pull request.
+2. **Code Coverage**: Generates a code coverage report and uploads it to Codecov on pull requests to main.
 
 3. **Docker Build and Push**: Builds and pushes the Docker image to DockerHub on pushes to main and when tags are created.
