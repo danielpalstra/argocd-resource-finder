@@ -3,33 +3,116 @@
 <head>
     <title>Kubernetes Resources</title>
     <style>
-        /* CSS styles will be added here in the future */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .toc {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        .toc h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+        .toc li {
+            margin-bottom: 5px;
+        }
+        .toc a {
+            text-decoration: none;
+            color: #3498db;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        .back-to-top {
+            display: inline-block;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-decoration: none;
+        }
+        .back-to-top:hover {
+            color: #3498db;
+            text-decoration: underline;
+        }
     </style>
 </head>
-<body>
+<body id="top">
     <h1>Kubernetes Resources</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Type</th>
-                <th>Namespace</th>
-                <th>Name</th>
-                <th>Label Value</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for resource in resources %}
-            <tr>
-                <td>{{ resource.resource_type }}</td>
-                <td>{{ resource.namespace }}</td>
-                <td>{{ resource.name }}</td>
-                <td>{{ resource.label_value }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% if not resources %}
+    {% if not resources_by_namespace %}
     <p>No {{ "managed" if managed else "unmanaged" }} resources found.</p>
+    {% else %}
+        <div class="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+                {% for namespace in resources_by_namespace.keys() %}
+                <li><a href="#namespace-{{ namespace }}">Namespace: {{ namespace }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        {% for namespace, resources in resources_by_namespace.items() %}
+        <h2 id="namespace-{{ namespace }}">Namespace: {{ namespace }}</h2>
+        <p><a href="#top" class="back-to-top">[Back to Top]</a></p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Label Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resource in resources %}
+                <tr>
+                    <td>{{ resource.resource_type }}</td>
+                    <td>{{ resource.name }}</td>
+                    <td>{{ resource.label_value }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endfor %}
     {% endif %}
 </body>
 </html>

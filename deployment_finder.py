@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import click
-from printer import ResourcePrinter, HTMLPrinter
+from printer import ResourcePrinter, HTMLPrinter, PrometheusMetricsPrinter
 from k8s_client import K8sClient
 
 
@@ -18,6 +18,9 @@ def get_resources(resource_type: str, managed: bool, output_format: str = 'text'
         if output_format == 'html' and output_file:
             printer = HTMLPrinter()
             printer.print_resources(resources, managed, output_file)
+        elif output_format == 'prometheus' and output_file:
+            printer = PrometheusMetricsPrinter()
+            printer.print_resources(resources, managed, output_file)
         else:
             printer = ResourcePrinter()
             printer.print_resources(resources, managed)
@@ -29,52 +32,52 @@ def get_resources(resource_type: str, managed: bool, output_format: str = 'text'
 @cli.command()
 @click.option('--managed/--unmanaged', default=None,
               help='Show ArgoCD managed/unmanaged deployments')
-@click.option('--output', '-o', type=click.Choice(['text', 'html']), default='text',
-              help='Output format (text or html)')
+@click.option('--output', '-o', type=click.Choice(['text', 'html', 'prometheus']), default='text',
+              help='Output format (text, html, or prometheus)')
 @click.option('--output-file', '-f', type=str,
               help='Output file for HTML format')
 def list_deployments(managed: bool, output: str, output_file: str):
     """List deployments based on their ArgoCD management status."""
-    if output == 'html' and not output_file:
+    if (output == 'html' or output == 'prometheus') and not output_file:
         raise click.UsageError('--output-file is required when using HTML output')
     get_resources('deployment', managed, output, output_file)
 
 @cli.command()
 @click.option('--managed/--unmanaged', default=None,
               help='Show ArgoCD managed/unmanaged statefulsets')
-@click.option('--output', '-o', type=click.Choice(['text', 'html']), default='text',
-              help='Output format (text or html)')
+@click.option('--output', '-o', type=click.Choice(['text', 'html', 'prometheus']), default='text',
+              help='Output format (text, html, or prometheus)')
 @click.option('--output-file', '-f', type=str,
               help='Output file for HTML format')
 def list_statefulsets(managed: bool, output: str, output_file: str):
     """List statefulsets based on their ArgoCD management status."""
-    if output == 'html' and not output_file:
+    if (output == 'html' or output == 'prometheus') and not output_file:
         raise click.UsageError('--output-file is required when using HTML output')
     get_resources('statefulset', managed, output, output_file)
 
 @cli.command()
 @click.option('--managed/--unmanaged', default=None,
               help='Show ArgoCD managed/unmanaged daemonsets')
-@click.option('--output', '-o', type=click.Choice(['text', 'html']), default='text',
-              help='Output format (text or html)')
+@click.option('--output', '-o', type=click.Choice(['text', 'html', 'prometheus']), default='text',
+              help='Output format (text, html, or prometheus)')
 @click.option('--output-file', '-f', type=str,
               help='Output file for HTML format')
 def list_daemonsets(managed: bool, output: str, output_file: str):
     """List daemonsets based on their ArgoCD management status."""
-    if output == 'html' and not output_file:
+    if (output == 'html' or output == 'prometheus') and not output_file:
         raise click.UsageError('--output-file is required when using HTML output')
     get_resources('daemonset', managed, output, output_file)
 
 @cli.command()
 @click.option('--managed/--unmanaged', default=None,
               help='Show ArgoCD managed/unmanaged resources')
-@click.option('--output', '-o', type=click.Choice(['text', 'html']), default='text',
-              help='Output format (text or html)')
+@click.option('--output', '-o', type=click.Choice(['text', 'html', 'prometheus']), default='text',
+              help='Output format (text, html, or prometheus)')
 @click.option('--output-file', '-f', type=str,
               help='Output file for HTML format')
 def list_all(managed: bool, output: str, output_file: str):
     """List all resources (deployments, statefulsets, and daemonsets) based on their ArgoCD management status."""
-    if output == 'html' and not output_file:
+    if (output == 'html' or output == 'prometheus') and not output_file:
         raise click.UsageError('--output-file is required when using HTML output')
     
     k8s_client = K8sClient()
@@ -96,6 +99,9 @@ def list_all(managed: bool, output: str, output_file: str):
     
     if output == 'html' and output_file:
         printer = HTMLPrinter()
+        printer.print_resources(all_resources, managed, output_file)
+    elif output == 'prometheus' and output_file:
+        printer = PrometheusMetricsPrinter()
         printer.print_resources(all_resources, managed, output_file)
     else:
         printer = ResourcePrinter()
