@@ -2,7 +2,7 @@ from typing import List
 import click
 from kubernetes import client, config
 from kubernetes.config import ConfigException
-from printer import ResourceInfo
+from printer.console import ResourceInfo
 
 class K8sClient:
     def __init__(self):

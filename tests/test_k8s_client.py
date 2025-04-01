@@ -3,7 +3,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from kubernetes.config import ConfigException
 from k8s_client import K8sClient
-from printer import ResourceInfo
+from printer.console import ResourceInfo
 
 def test_init_with_local_config():
     with patch('kubernetes.config.load_kube_config') as mock_local_config:

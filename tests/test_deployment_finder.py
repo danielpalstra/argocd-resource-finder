@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from deployment_finder import cli
-from printer import ResourceInfo
+from printer.console import ResourceInfo
 
 @pytest.fixture
 def mock_k8s_client():

@@ -1,11 +1,11 @@
 from typing import List
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
-from printer import ResourceInfo
+from printer.console import ResourceInfo
 
 class HTMLPrinter:
     def __init__(self):
-        template_dir = Path(__file__).parent / 'templates'
+        template_dir = Path(__file__).parent.parent / 'templates'
         self.env = Environment(loader=FileSystemLoader(str(template_dir)))
         self.template = self.env.get_template('resources.html')
 

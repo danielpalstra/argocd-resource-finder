@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 import click
-from printer import ResourcePrinter
-from html_printer import HTMLPrinter
+from printer import ResourcePrinter, HTMLPrinter
 from k8s_client import K8sClient
 
 
