@@ -1,14 +1,29 @@
 from typing import List
 import click
 from kubernetes import client, config
+from kubernetes.config import ConfigException
 from printer import ResourceInfo
 
 class K8sClient:
     def __init__(self):
         try:
             config.load_kube_config()
-        except Exception:
-            config.load_incluster_config()
+        except IsADirectoryError as e:
+            click.echo(f"Error loading kube config - directory found instead of file: {e}", err=True)
+            exit(1)
+        except ConfigException as e:
+            click.echo(f"Invalid kube-config file: {e}", err=True)
+            try:
+                config.load_incluster_config()
+            except Exception as cluster_e:
+                click.echo(f"Failed to load both local and in-cluster config: {str(e)} and {str(cluster_e)}", err=True)
+                exit(1)
+        except Exception as e:
+            try:
+                config.load_incluster_config()
+            except Exception as cluster_e:
+                click.echo(f"Failed to load both local and in-cluster config: {str(e)} and {str(cluster_e)}", err=True)
+                raise
         self.api = client.AppsV1Api()
 
     def _get_argocd_managed_status(self, labels: dict) -> tuple[bool, str]:
