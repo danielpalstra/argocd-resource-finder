@@ -13,8 +13,8 @@ def cli():
 
 def get_resources(resource_type: str, managed: bool, output_format: str = 'text', output_file: str = None):
     """Generic function to get and print resources"""
+    k8s_client = K8sClient()
     try:
-        k8s_client = K8sClient()
         resources = k8s_client.get_all_resources(resource_type)
         if output_format == 'html' and output_file:
             printer = HTMLPrinter()
@@ -24,10 +24,11 @@ def get_resources(resource_type: str, managed: bool, output_format: str = 'text'
             printer.print_resources(resources, managed)
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
-        raise
+        # Don't raise the error, just return
+        return
 
 @cli.command()
-@click.option('--managed/--unmanaged', default=False,
+@click.option('--managed/--unmanaged', default=None,
               help='Show ArgoCD managed/unmanaged deployments')
 @click.option('--output', '-o', type=click.Choice(['text', 'html']), default='text',
               help='Output format (text or html)')
@@ -40,7 +41,7 @@ def list_deployments(managed: bool, output: str, output_file: str):
     get_resources('deployment', managed, output, output_file)
 
 @cli.command()
-@click.option('--managed/--unmanaged', default=False,
+@click.option('--managed/--unmanaged', default=None,
               help='Show ArgoCD managed/unmanaged statefulsets')
 @click.option('--output', '-o', type=click.Choice(['text', 'html']), default='text',
               help='Output format (text or html)')
@@ -53,7 +54,7 @@ def list_statefulsets(managed: bool, output: str, output_file: str):
     get_resources('statefulset', managed, output, output_file)
 
 @cli.command()
-@click.option('--managed/--unmanaged', default=False,
+@click.option('--managed/--unmanaged', default=None,
               help='Show ArgoCD managed/unmanaged daemonsets')
 @click.option('--output', '-o', type=click.Choice(['text', 'html']), default='text',
               help='Output format (text or html)')
@@ -66,7 +67,7 @@ def list_daemonsets(managed: bool, output: str, output_file: str):
     get_resources('daemonset', managed, output, output_file)
 
 @cli.command()
-@click.option('--managed/--unmanaged', default=False,
+@click.option('--managed/--unmanaged', default=None,
               help='Show ArgoCD managed/unmanaged resources')
 @click.option('--output', '-o', type=click.Choice(['text', 'html']), default='text',
               help='Output format (text or html)')
@@ -79,13 +80,20 @@ def list_all(managed: bool, output: str, output_file: str):
     
     k8s_client = K8sClient()
     all_resources = []
+    errors = []
     
     for resource_type in ['deployment', 'statefulset', 'daemonset']:
         try:
             resources = k8s_client.get_all_resources(resource_type)
             all_resources.extend(resources)
         except Exception as e:
-            click.echo(f"Error fetching {resource_type}s: {e}", err=True)
+            errors.append(f"Error fetching {resource_type}s: {e}")
+    
+    if errors:
+        for error in errors:
+            click.echo(error, err=True)
+        if not all_resources:
+            return
     
     if output == 'html' and output_file:
         printer = HTMLPrinter()

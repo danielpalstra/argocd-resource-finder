@@ -13,7 +13,7 @@ class K8sClient:
 
     def _get_argocd_managed_status(self, labels: dict) -> tuple[bool, str]:
         label_value = (labels or {}).get('argocd.argoproj.io/instance', '')
-        return bool(label_value), label_value or 'N/A'
+        return bool(label_value), label_value or 'Not ArgoCD Managed'
 
     def get_all_resources(self, resource_type: str) -> List[ResourceInfo]:
         resources = []

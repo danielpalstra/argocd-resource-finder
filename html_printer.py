@@ -9,7 +9,7 @@ class HTMLPrinter:
         self.env = Environment(loader=FileSystemLoader(str(template_dir)))
         self.template = self.env.get_template('resources.html')
 
-    def print_resources(self, resources: List[ResourceInfo], managed: bool, output_file: str):
+    def print_resources(self, resources: List[ResourceInfo], managed: bool = None, output_file: str = None):
         """Print resources to an HTML file.
         
         Args:
@@ -17,7 +17,7 @@ class HTMLPrinter:
             managed: Whether to show managed or unmanaged resources
             output_file: Path to the output HTML file
         """
-        filtered_resources = [r for r in resources if r.is_argocd_managed == managed]
+        filtered_resources = resources if managed is None else [r for r in resources if r.is_argocd_managed == managed]
         
         html_content = self.template.render(
             resources=filtered_resources,
