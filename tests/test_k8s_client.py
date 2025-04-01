@@ -56,8 +56,12 @@ def test_init_with_config_exception():
             err=True
         )
 
-def test_get_argocd_managed_status():
+@patch('kubernetes.config.load_kube_config')
+@patch('kubernetes.config.load_incluster_config')
+def test_get_argocd_managed_status(mock_incluster_config, mock_load_kube_config):
+    # Mock the Kubernetes client initialization
     client = K8sClient()
+    
     # Test with ArgoCD managed resource
     labels = {'argocd.argoproj.io/instance': 'my-app'}
     is_managed, label_value = client._get_argocd_managed_status(labels)
